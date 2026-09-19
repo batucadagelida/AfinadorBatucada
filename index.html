@@ -550,13 +550,11 @@
 </div>
 
 <script>
-// Valors per defecte per a cada instrument de la batucada
+// Valors per defecte per als 3 Surdos de la batucada
 const DEFAULT_INSTRUMENTS = [
   { id: 'surdo1', nombre: 'Surdo 1ª', defaultHz: 65.0 },
   { id: 'surdo2', nombre: 'Surdo 2ª', defaultHz: 87.0 },
-  { id: 'surdo3', nombre: 'Surdo 3ª', defaultHz: 110.0 },
-  { id: 'repe',   nombre: 'Repe',     defaultHz: 320.0 },
-  { id: 'tambor', nombre: 'Tamborí', defaultHz: 650.0 }
+  { id: 'surdo3', nombre: 'Surdo 3ª', defaultHz: 110.0 }
 ];
 
 let configHz = {};
@@ -664,6 +662,7 @@ elBtnSave.onclick = () => {
 // variables d'Àudio i Algorisme de Detecció
 let audioCtx = null;
 let analyser = null;
+let lowpassFilter = null;
 let micStream = null;
 let rafId = null;
 let escuchando = false;
@@ -678,57 +677,46 @@ const elBtnEscuchar = document.getElementById('btnEscuchar');
 const elStrikeIndicator = document.getElementById('strikeIndicator');
 const elStrikeText = document.getElementById('strikeText');
 
-// Algorisme de detecció acotat i normalitzat (NSDF) optimitzat per a diferents tipus de percussió
-function detectarFrecuenciaPercusion(buffer, sampleRate, targetHz, instId) {
+function detectarFrecuenciaSurdo(buffer, sampleRate) {
   const SIZE = buffer.length;
   
-  // Calcular RMS (Energia)
+  // Calcular RMS (Energia del senyal)
   let sumSquare = 0;
   for (let i = 0; i < SIZE; i++) {
     sumSquare += buffer[i] * buffer[i];
   }
   const rms = Math.sqrt(sumSquare / SIZE);
 
-  // Umbral adaptatiu de soroll
-  const minRms = (instId === 'tambor' || instId === 'repe') ? 0.008 : 0.012;
-  if (rms < minRms) return { freq: -1, rms, clarity: 0 };
+  // Umbral adaptatiu de silenci/soroll de fons
+  if (rms < 0.008) return { freq: -1, rms, clarity: 0 };
 
-  // Definir el rang de cerca segons l'instrument actiu
-  let minFreq, maxFreq;
-  if (instId === 'tambor') {
-    minFreq = Math.max(300, targetHz * 0.45);
-    maxFreq = Math.min(1300, targetHz * 2.2);
-  } else if (instId === 'repe') {
-    minFreq = Math.max(150, targetHz * 0.45);
-    maxFreq = Math.min(700, targetHz * 2.2);
-  } else {
-    // Surdos (freqüències baixes)
-    minFreq = Math.max(35, targetHz * 0.45);
-    maxFreq = Math.min(300, targetHz * 2.2);
-  }
+  // Rang acotat per als Surdos (35 Hz fins a 220 Hz)
+  const minFreq = 35;
+  const maxFreq = 220;
 
   const minLag = Math.max(2, Math.floor(sampleRate / maxFreq));
   const maxLag = Math.min(SIZE - 2, Math.ceil(sampleRate / minFreq));
 
-  // Per a instruments secs i aguts (Tamborí/Repe), ometem el soroll pur de l'impacte de la baqueta
-  let offset = 0;
-  if (instId === 'tambor' || instId === 'repe') {
-    let maxAbs = 0, maxIdx = 0;
-    for (let i = 0; i < Math.min(400, SIZE); i++) {
-      if (Math.abs(buffer[i]) > maxAbs) {
-        maxAbs = Math.abs(buffer[i]);
-        maxIdx = i;
-      }
-    }
-    if (maxIdx > 5 && maxIdx < SIZE - 800) {
-      offset = Math.min(maxIdx + 12, 180); // Saltem el soroll inicial del pic d'atac
+  // Localitzar el pic d'atac (impacte de la baqueta)
+  let maxAbs = 0;
+  let peakIdx = 0;
+  for (let i = 0; i < Math.min(1200, SIZE); i++) {
+    const val = Math.abs(buffer[i]);
+    if (val > maxAbs) {
+      maxAbs = val;
+      peakIdx = i;
     }
   }
 
-  const evalSize = Math.min(1024, SIZE - offset - maxLag);
+  // Finestra d'anàlisi: just després de l'impacte inicial (entre 5ms i 60ms)
+  // Així capturem la freqüència real d'atac i evitem la cua on la pell perd ressonància
+  const offset = Math.min(peakIdx + Math.floor(sampleRate * 0.005), SIZE - maxLag - 512);
+  if (offset < 0) return { freq: -1, rms, clarity: 0 };
+
+  const evalSize = Math.min(2048, SIZE - offset - maxLag);
   if (evalSize < maxLag) return { freq: -1, rms, clarity: 0 };
 
-  // NSDF (Normalized Square Difference Function)
+  // NSDF (Normalized Square Difference Function) per a freqüències baixes
   const nsdf = new Float32Array(maxLag + 1);
   for (let lag = minLag; lag <= maxLag; lag++) {
     let num = 0;
@@ -742,7 +730,7 @@ function detectarFrecuenciaPercusion(buffer, sampleRate, targetHz, instId) {
     nsdf[lag] = den > 0 ? (2 * num) / den : 0;
   }
 
-  // Cerca de pics locals en el NSDF
+  // Cerca del pic d'autocorrelació
   let maxVal = -1;
   let maxLagIdx = -1;
 
@@ -755,9 +743,9 @@ function detectarFrecuenciaPercusion(buffer, sampleRate, targetHz, instId) {
     }
   }
 
-  if (maxLagIdx <= 0 || maxVal < 0.22) return { freq: -1, rms, clarity: maxVal };
+  if (maxLagIdx <= 0 || maxVal < 0.28) return { freq: -1, rms, clarity: maxVal };
 
-  // Interpolació parabòlica per a la màxima precisió decimal de Hz
+  // Interpolació parabòlica per a màxima precisió decimal de Hz
   const alpha = nsdf[maxLagIdx - 1];
   const beta = nsdf[maxLagIdx];
   const gamma = nsdf[maxLagIdx + 1];
@@ -784,7 +772,7 @@ function actualizarMedicion(freq, forceUpdate = false) {
   
   elAguja.style.left = posPercentage + '%';
 
-  const enTono = Math.abs(centsDiff) <= 6;
+  const enTono = Math.abs(centsDiff) <= 5;
   elAguja.classList.toggle('ok', enTono);
 
   if (enTono) {
@@ -809,33 +797,20 @@ function dispararEfectoGolpe() {
   }, 1200);
 }
 
-// Bucle principal d'escaneig del micròfon
 function procesarAudio() {
   const buffer = new Float32Array(analyser.fftSize);
   analyser.getFloatTimeDomainData(buffer);
 
-  const targetHz = configHz[idInstrumentoSeleccionado] || 440;
-  const { freq, rms, clarity } = detectarFrecuenciaPercusion(buffer, audioCtx.sampleRate, targetHz, idInstrumentoSeleccionado);
+  const { freq, rms, clarity } = detectarFrecuenciaSurdo(buffer, audioCtx.sampleRate);
 
   // Detecció d'impacte (Peak onset)
   const deltaRms = rms - lastRms;
-  const isAgudo = (idInstrumentoSeleccionado === 'tambor' || idInstrumentoSeleccionado === 'repe');
-  const minDelta = isAgudo ? 0.02 : 0.045;
-  const minEnergy = isAgudo ? 0.015 : 0.05;
+  const esGolpe = deltaRms > 0.035 && rms > 0.025;
 
-  const esGolpe = deltaRms > minDelta && rms > minEnergy;
-
-  if (esGolpe && freq > 30 && freq < 1300) {
+  if (esGolpe && freq >= 35 && freq <= 220) {
     ultimoHzCalculado = freq;
     dispararEfectoGolpe();
     actualizarMedicion(freq);
-  } else if (freq > 30 && freq < 1300 && rms > minEnergy && clarity > 0.25) {
-    // Si la pell ressona, apliquem suavitzat adaptatiu
-    const weight = isAgudo ? 0.45 : 0.3;
-    if (Math.abs(freq - ultimoHzCalculado) < (targetHz * 0.3) || ultimoHzCalculado === 0) {
-      ultimoHzCalculado = ultimoHzCalculado * (1 - weight) + freq * weight;
-      actualizarMedicion(ultimoHzCalculado);
-    }
   }
 
   lastRms = rms;
@@ -857,11 +832,18 @@ async function iniciarAudio() {
   }
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Filtre passa-baix de 250 Hz per eliminar tot el soroll agut de la baqueta i habitació
+  lowpassFilter = audioCtx.createBiquadFilter();
+  lowpassFilter.type = 'lowpass';
+  lowpassFilter.frequency.value = 250;
+
   analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
+  analyser.fftSize = 4096; // Buffer gran per capturar bé les freqüències sub-greus dels Surdos
   
   const source = audioCtx.createMediaStreamSource(micStream);
-  source.connect(analyser);
+  source.connect(lowpassFilter);
+  lowpassFilter.connect(analyser);
 
   escuchando = true;
   elBtnEscuchar.textContent = 'Aturar Micròfon';
