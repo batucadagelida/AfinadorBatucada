@@ -1,228 +1,523 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="ca">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Afinador de Batucada</title>
+<title>Afinador Tukats de Gelida</title>
 <style>
-  :root{
-    --piel: #e8dcc4;
-    --couro: #8a5a3c;
-    --couro-escuro: #5c3a26;
-    --laton: #b8863e;
-    --carvao: #1f1a16;
-    --carvao-suave: #2c2520;
-    --vermelho: #b3412c;
-    --verde-ok: #5c7a4f;
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    /* Paleta basada en el verd lima (#d2eb34) i fons negre pur */
+    --fons-negre: #000000;
+    --verde-principal: #d2eb34;
+    --verde-brillant: #e8fa51;
+    --verde-fosc: #0b1208;
+    --verde-targeta: #111a0e;
+    --verde-targeta-hover: #192715;
+    --verde-borda: #2b3e21;
+    --verde-subtil: #1d2e16;
+    --verde-ok: #20f074;
+    --rojo-afinar: #ff4d4d;
+    --texto-clau: #f4fbe9;
+    --texto-secundari: #9fb88f;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    min-height:100vh;
-    background: var(--carvao);
-    background-image:
-      radial-gradient(circle at 50% -10%, rgba(184,134,62,0.12), transparent 55%);
-    color: var(--piel);
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    display:flex;
-    justify-content:center;
-    padding: 28px 16px 48px;
-  }
-  .app{
-    width:100%;
-    max-width: 420px;
-  }
-  header{
-    text-align:left;
-    margin-bottom: 22px;
-  }
-  .kicker{
-    font-size: 13px;
-    color: var(--laton);
-    letter-spacing: 0.02em;
-    margin: 0 0 4px;
-  }
-  h1{
-    font-family: 'Arial Black', Impact, sans-serif;
-    font-weight: 900;
-    font-size: 30px;
+
+  * { box-sizing: border-box; }
+
+  body {
     margin: 0;
-    letter-spacing: -0.01em;
-    line-height: 1.05;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--fons-negre);
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(210, 235, 52, 0.12), transparent 70%),
+      radial-gradient(circle at 80% 90%, rgba(43, 62, 33, 0.25), transparent 60%);
+    color: var(--texto-clau);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 12px 12px 30px;
+    -webkit-tap-highlight-color: transparent;
   }
-  .instrumentos{
-    display:flex;
+
+  .app {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Capçalera amb tipografia Cooper Black */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 2px 10px;
+    border-bottom: 2px solid rgba(210, 235, 52, 0.25);
+  }
+
+  .header-titles {
+    flex: 1;
+  }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--verde-principal);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 2px 0;
+  }
+
+  h1 {
+    font-family: 'Cooper Black', 'Fredoka', 'Goudy Old Style', 'Arial Black', serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--verde-brillant);
+    margin: 0;
+    line-height: 1.15;
+    text-shadow: 0 0 16px rgba(210, 235, 52, 0.3);
+  }
+
+  /* Botó de Configuració */
+  .btn-config {
+    background: var(--verde-targeta);
+    border: 1px solid var(--verde-borda);
+    color: var(--verde-principal);
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 10px;
+    touch-action: manipulation;
+  }
+
+  .btn-config:hover, .btn-config:active {
+    background: var(--verde-principal);
+    color: var(--fons-negre);
+    transform: rotate(30deg);
+  }
+
+  .btn-config svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+  }
+
+  /* Selector d'Instruments */
+  .instrumentos-label {
+    font-size: 11px;
+    color: var(--texto-secundari);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .instrumentos {
+    display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding: 4px 2px 18px;
-    margin-bottom: 4px;
+    padding: 2px 2px 8px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    touch-action: pan-x;
   }
-  .instrumentos::-webkit-scrollbar{display:none;}
-  .inst-btn{
+  .instrumentos::-webkit-scrollbar { display: none; }
+
+  .inst-btn {
     flex: 0 0 auto;
-    background: var(--carvao-suave);
-    border: 1px solid #40342a;
-    color: var(--piel);
-    padding: 9px 14px;
-    border-radius: 999px;
+    background: var(--verde-targeta);
+    border: 1px solid var(--verde-borda);
+    color: var(--texto-clau);
+    padding: 10px 14px;
+    min-height: 48px;
+    border-radius: 12px;
     font-size: 14px;
-    cursor:pointer;
-  }
-  .inst-btn.activo{
-    background: var(--couro);
-    border-color: var(--couro);
-    color: #fff;
-  }
-
-  .disco{
-    position:relative;
-    background: radial-gradient(circle at 35% 30%, #ffffff08, transparent 60%), var(--carvao-suave);
-    border: 1px solid #40342a;
-    border-radius: 26px;
-    padding: 30px 22px 26px;
-    margin-bottom: 18px;
-  }
-  .rim{
-    position:absolute;
-    inset: 8px;
-    border-radius: 20px;
-    border: 6px solid var(--laton);
-    opacity: 0.18;
-    pointer-events:none;
-  }
-  .lectura{
-    text-align:center;
-    position:relative;
-  }
-  .nota{
-    font-family: 'Arial Black', Impact, sans-serif;
-    font-weight:900;
-    font-size: 72px;
-    line-height:1;
-    margin: 6px 0 2px;
-    color: #fff;
-  }
-  .hz{
-    font-size: 15px;
-    color: var(--laton);
-    letter-spacing: 0.02em;
-  }
-  .estado{
-    font-size: 13px;
-    color: #9c8f7d;
-    min-height: 18px;
-    margin-top: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    touch-action: manipulation;
   }
 
-  .aguja-wrap{
-    margin: 22px auto 6px;
-    max-width: 300px;
+  .inst-btn:hover {
+    background: var(--verde-targeta-hover);
+    border-color: var(--verde-principal);
   }
-  .escala{
-    display:flex;
-    justify-content:space-between;
+
+  .inst-btn .sub-hz {
     font-size: 11px;
-    color: #9c8f7d;
-    padding: 0 2px 4px;
+    color: var(--texto-secundari);
+    font-weight: 400;
   }
-  .barra{
-    position:relative;
-    height: 10px;
-    background: #14100d;
+
+  .inst-btn.activo {
+    background: var(--verde-principal);
+    border-color: var(--verde-brillant);
+    color: var(--fons-negre);
+    box-shadow: 0 4px 16px rgba(210, 235, 52, 0.35);
+  }
+
+  .inst-btn.activo .sub-hz {
+    color: #1a2608;
+    font-weight: 700;
+  }
+
+  /* Targeta Central de l'Afinador */
+  .disco {
+    position: relative;
+    background: linear-gradient(165deg, #121c0f 0%, #080d07 100%);
+    border: 1px solid var(--verde-borda);
+    border-radius: 20px;
+    padding: 20px 16px 18px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.9);
+  }
+
+  .target-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(210, 235, 52, 0.15);
+    border: 1px solid rgba(210, 235, 52, 0.35);
+    color: var(--verde-brillant);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .strike-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--verde-principal);
+    background: rgba(0,0,0,0.6);
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    opacity: 0.65;
+    border: 1px solid var(--verde-borda);
+    transition: all 0.2s ease;
+  }
+
+  .strike-indicator.detected {
+    opacity: 1;
+    background: var(--verde-principal);
+    color: var(--fons-negre);
+    border-color: var(--verde-brillant);
+    transform: scale(1.04);
+    box-shadow: 0 0 12px rgba(210, 235, 52, 0.5);
+  }
+
+  .lectura {
+    text-align: center;
+    position: relative;
+    margin-top: 4px;
+  }
+
+  .hz-big {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 62px;
+    line-height: 1;
+    margin: 2px 0 2px;
+    color: #ffffff;
+    text-shadow: 0 0 24px rgba(210, 235, 52, 0.25);
+  }
+
+  .hz-label {
+    font-size: 13px;
+    color: var(--verde-principal);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .estado {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--texto-secundari);
+    min-height: 26px;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    display: inline-block;
+    word-break: break-word;
+  }
+
+  .estado.ok { color: var(--verde-ok); background: rgba(32, 240, 116, 0.12); border: 1px solid rgba(32, 240, 116, 0.3); }
+  .estado.alto { color: #ff7777; background: rgba(255, 77, 77, 0.12); border: 1px solid rgba(255, 77, 77, 0.3); }
+  .estado.bajo { color: #ffcc00; background: rgba(255, 204, 0, 0.12); border: 1px solid rgba(255, 204, 0, 0.3); }
+
+  /* Agulla d'Afinació */
+  .aguja-wrap {
+    margin: 18px auto 10px;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .escala {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--texto-secundari);
+    padding: 0 4px 6px;
+    text-transform: uppercase;
+  }
+
+  .barra {
+    position: relative;
+    height: 12px;
+    background: #000000;
     border-radius: 999px;
-    overflow:visible;
-    border: 1px solid #40342a;
+    overflow: visible;
+    border: 1px solid var(--verde-borda);
   }
-  .barra .zona-centro{
-    position:absolute;
-    left: 47%;
-    width: 6%;
-    top:0;bottom:0;
-    background: rgba(92,122,79,0.35);
-  }
-  .aguja{
-    position:absolute;
-    top: -6px;
-    width: 4px;
-    height: 22px;
-    background: var(--vermelho);
+
+  .barra .zona-centro {
+    position: absolute;
+    left: 46%;
+    width: 8%;
+    top: 0; bottom: 0;
+    background: rgba(32, 240, 116, 0.45);
     border-radius: 2px;
+    box-shadow: 0 0 10px rgba(32, 240, 116, 0.6);
+  }
+
+  .aguja {
+    position: absolute;
+    top: -7px;
+    width: 5px;
+    height: 26px;
+    background: var(--rojo-afinar);
+    border-radius: 3px;
     left: 50%;
     transform: translateX(-50%);
-    transition: left 0.08s linear, background 0.15s linear;
+    transition: left 0.1s cubic-bezier(0.1, 0.8, 0.3, 1), background 0.15s ease;
+    box-shadow: 0 0 8px rgba(255, 77, 77, 0.9);
   }
-  .aguja.ok{ background: var(--verde-ok); }
 
-  .fila-botones{
-    display:flex;
-    gap: 10px;
-    margin-top: 22px;
+  .aguja.ok {
+    background: var(--verde-ok);
+    box-shadow: 0 0 12px var(--verde-ok);
   }
-  button.principal{
-    flex:1;
-    background: var(--laton);
-    color: #241b10;
+
+  /* Botons principals */
+  .fila-botones {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  button.principal {
+    flex: 1;
+    width: 100%;
+    background: var(--verde-principal);
+    color: var(--fons-negre);
     border: none;
     border-radius: 14px;
-    padding: 14px 10px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor:pointer;
+    padding: 16px 12px;
+    min-height: 52px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(210, 235, 52, 0.3);
+    transition: all 0.2s ease;
+    touch-action: manipulation;
   }
-  button.principal:active{ transform: translateY(1px); }
-  button.principal.escuchando{
-    background: var(--vermelho);
-    color: #fff;
+
+  button.principal:active { transform: translateY(2px); }
+
+  button.principal.escuchando {
+    background: var(--rojo-afinar);
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(255, 77, 77, 0.4);
   }
-  button.secundario{
-    flex: 1;
+
+  /* Ajustos específics per a mòbils molt petits */
+  @media (max-width: 360px) {
+    h1 { font-size: 19px; }
+    .hz-big { font-size: 52px; }
+    .disco { padding: 16px 12px 14px; }
+    .inst-btn { padding: 8px 10px; font-size: 13px; min-height: 44px; }
+    button.principal { padding: 14px 10px; font-size: 15px; min-height: 48px; }
+    .escala { font-size: 9px; }
+  }
+
+  /* Modal de Configuració */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal {
+    background: var(--verde-targeta);
+    border: 1px solid var(--verde-borda);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--verde-brillant);
+  }
+
+  .btn-close {
     background: transparent;
-    color: var(--piel);
-    border: 1px solid #40342a;
-    border-radius: 14px;
-    padding: 14px 10px;
+    border: none;
+    color: var(--texto-secundari);
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.6);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--verde-borda);
+  }
+
+  .config-item label {
+    font-weight: 600;
     font-size: 14px;
-    cursor:pointer;
+    color: var(--texto-clau);
   }
 
-  .referencia{
-    margin-top: 14px;
-    font-size: 13px;
-    color: #9c8f7d;
-    text-align:center;
-    min-height: 18px;
+  .config-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .referencia b{ color: var(--piel); }
 
-  .nota-explicativa{
-    margin-top: 22px;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #9c8f7d;
+  .config-input-wrap input {
+    width: 78px;
+    background: var(--fons-negre);
+    border: 1px solid var(--verde-borda);
+    color: var(--verde-principal);
+    font-weight: 700;
+    font-size: 16px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    text-align: center;
   }
-  .nota-explicativa strong{ color: var(--piel); }
+
+  .btn-save {
+    width: 100%;
+    background: var(--verde-principal);
+    color: var(--fons-negre);
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .instrucciones {
+    font-size: 13px;
+    color: var(--texto-secundari);
+    line-height: 1.5;
+    background: rgba(17, 26, 14, 0.7);
+    padding: 14px;
+    border-radius: 14px;
+    border-left: 3px solid var(--verde-principal);
+    border: 1px solid var(--verde-borda);
+  }
 </style>
 </head>
 <body>
+
 <div class="app">
   <header>
-    <p class="kicker">Batucada</p>
-    <h1>Afinador de<br>parches</h1>
+    <div class="header-titles">
+      <p class="kicker">Tukats de Gelida</p>
+      <h1>Afinador de la Batucada</h1>
+    </div>
+    <button class="btn-config" id="btnConfig" title="Configurar Hz de Referència">
+      <svg viewBox="0 0 24 24">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+      </svg>
+    </button>
   </header>
 
-  <div class="instrumentos" id="instrumentos"></div>
+  <div>
+    <div class="instrumentos-label">Selecciona l'Instrument</div>
+    <div class="instrumentos" id="instrumentosContainer"></div>
+  </div>
 
   <div class="disco">
-    <div class="rim"></div>
+    <div class="target-badge" id="targetBadge">Ref: -- Hz</div>
+    
+    <div style="text-align: center;">
+      <div class="strike-indicator" id="strikeIndicator">
+        <span>⚡</span> <span id="strikeText">Esperant el to...</span>
+      </div>
+    </div>
+
     <div class="lectura">
-      <div class="nota" id="nota">—</div>
-      <div class="hz" id="hz">0.0 Hz</div>
-      <div class="estado" id="estado">Pulsa "Escuchar" y golpea el parche</div>
+      <div class="hz-big" id="hzVal">0.0</div>
+      <div class="hz-label">Hz Mesurats</div>
+      <div class="estado" id="estadoVal">Prem «Activar Micròfon» i fes sonar l'instrument</div>
     </div>
 
     <div class="aguja-wrap">
-      <div class="escala"><span>grave</span><span>referencia</span><span>agudo</span></div>
+      <div class="escala">
+        <span>Greu (Afluixa)</span>
+        <span>Referència</span>
+        <span>Agut (Tensa)</span>
+      </div>
       <div class="barra">
         <div class="zona-centro"></div>
         <div class="aguja" id="aguja"></div>
@@ -230,203 +525,335 @@
     </div>
 
     <div class="fila-botones">
-      <button class="principal" id="btnEscuchar">Escuchar</button>
-      <button class="secundario" id="btnRef">Fijar referencia</button>
+      <button class="principal" id="btnEscuchar">Activar Micròfon</button>
     </div>
-    <div class="referencia" id="refTexto">Sin referencia fijada — se mostrará la nota más próxima</div>
   </div>
 
-  <p class="nota-explicativa">
-    <strong>Cómo usarlo:</strong> los parches de percusión no siempre tienen una nota musical exacta,
-    así que este afinador hace dos cosas: muestra la <strong>nota más cercana</strong> detectada al golpear,
-    y te deja <strong>fijar una referencia</strong> — golpea el primer surdo cuando suene bien, pulsa "Fijar referencia",
-    y luego usa la aguja para igualar la tensión del resto de surdos del mismo tipo a esa misma frecuencia.
-  </p>
+  <div class="instrucciones">
+    <strong>💡 Mode d'afinació per a percussió:</strong><br>
+    En fer sonar l'instrument, l'aplicació detectarà automàticament l'<strong>impacte (⚡)</strong>, aïllant el to fonamental real i mantenint la lectura per tal que puguis verificar la freqüència repetidament.
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Ajustos de Referència (Hz)</h2>
+      <button class="btn-close" id="btnCloseModal">&times;</button>
+    </div>
+    <p style="font-size: 12px; color: var(--texto-secundari); margin-top: -10px; margin-bottom: 16px;">
+      Fixa la freqüència objectiu a la qual vols afinar cada instrument de la batucada:
+    </p>
+    <div class="config-list" id="configList"></div>
+    <button class="btn-save" id="btnSaveConfig">Desar els Canvis</button>
+  </div>
 </div>
 
 <script>
-const instrumentosData = [
-  { id: 'surdo-marcacion', nombre: 'Surdo marcación', objetivo: 73.4 },
-  { id: 'surdo-respuesta', nombre: 'Surdo respuesta', objetivo: 98.0 },
-  { id: 'surdo-corte', nombre: 'Surdo corte', objetivo: 110.0 },
-  { id: 'caixa', nombre: 'Caixa', objetivo: 220.0 },
-  { id: 'repique', nombre: 'Repique', objetivo: 196.0 },
-  { id: 'tamborim', nombre: 'Tamborim', objetivo: 330.0 },
-  { id: 'libre', nombre: 'Libre (sin preset)', objetivo: null },
+// Valors per defecte per a cada instrument de la batucada
+const DEFAULT_INSTRUMENTS = [
+  { id: 'surdo1', nombre: 'Surdo 1ª', defaultHz: 65.0 },
+  { id: 'surdo2', nombre: 'Surdo 2ª', defaultHz: 87.0 },
+  { id: 'surdo3', nombre: 'Surdo 3ª', defaultHz: 110.0 },
+  { id: 'repe',   nombre: 'Repe',     defaultHz: 196.0 },
+  { id: 'tambor', nombre: 'Tamborí', defaultHz: 330.0 }
 ];
 
-const NOMBRES_NOTAS = ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+let configHz = {};
+let idInstrumentoSeleccionado = 'surdo1';
 
-let instrumentoActual = instrumentosData[0];
-let referencia = null; // Hz fijado manualmente por el usuario
-let ultimaFrecuencia = 0;
+// Carregar configuració de LocalStorage o agafar valors per defecte
+function cargarConfiguracion() {
+  const saved = localStorage.getItem('tukats_afinador_config');
+  if (saved) {
+    try {
+      configHz = JSON.parse(saved);
+    } catch(e) {
+      configHz = {};
+    }
+  }
+  DEFAULT_INSTRUMENTS.forEach(inst => {
+    if (!configHz[inst.id]) {
+      configHz[inst.id] = inst.defaultHz;
+    }
+  });
+}
 
+function guardarConfiguracion() {
+  localStorage.setItem('tukats_afinador_config', JSON.stringify(configHz));
+}
+
+cargarConfiguracion();
+
+// Renderitzar botons d'instruments
+const elContainer = document.getElementById('instrumentosContainer');
+function renderBotonesInstrumentos() {
+  elContainer.innerHTML = '';
+  DEFAULT_INSTRUMENTS.forEach(inst => {
+    const btn = document.createElement('button');
+    const targetHz = configHz[inst.id];
+    btn.className = 'inst-btn' + (inst.id === idInstrumentoSeleccionado ? ' activo' : '');
+    btn.innerHTML = `
+      <span>${inst.nombre}</span>
+      <span class="sub-hz">${targetHz.toFixed(1)} Hz</span>
+    `;
+    btn.onclick = () => {
+      idInstrumentoSeleccionado = inst.id;
+      renderBotonesInstrumentos();
+      actualizarDisplayReferencia();
+      actualizarMedicion(ultimoHzCalculado, true);
+    };
+    elContainer.appendChild(btn);
+  });
+}
+
+const elTargetBadge = document.getElementById('targetBadge');
+function actualizarDisplayReferencia() {
+  const ref = configHz[idInstrumentoSeleccionado];
+  elTargetBadge.textContent = `Target: ${ref.toFixed(1)} Hz`;
+}
+
+renderBotonesInstrumentos();
+actualizarDisplayReferencia();
+
+// Modal de Configuració
+const elModal = document.getElementById('modalOverlay');
+const elBtnConfig = document.getElementById('btnConfig');
+const elBtnClose = document.getElementById('btnCloseModal');
+const elConfigList = document.getElementById('configList');
+const elBtnSave = document.getElementById('btnSaveConfig');
+
+function abrirModal() {
+  elConfigList.innerHTML = '';
+  DEFAULT_INSTRUMENTS.forEach(inst => {
+    const div = document.createElement('div');
+    div.className = 'config-item';
+    div.innerHTML = `
+      <label>${inst.nombre}</label>
+      <div class="config-input-wrap">
+        <input type="number" step="0.5" id="input_${inst.id}" value="${configHz[inst.id]}">
+        <span style="font-size: 13px; color: var(--texto-secundari);">Hz</span>
+      </div>
+    `;
+    elConfigList.appendChild(div);
+  });
+  elModal.classList.add('open');
+}
+
+function cerrarModal() {
+  elModal.classList.remove('open');
+}
+
+elBtnConfig.onclick = abrirModal;
+elBtnClose.onclick = cerrarModal;
+elModal.onclick = (e) => { if (e.target === elModal) cerrarModal(); };
+
+elBtnSave.onclick = () => {
+  DEFAULT_INSTRUMENTS.forEach(inst => {
+    const input = document.getElementById(`input_${inst.id}`);
+    if (input && !isNaN(parseFloat(input.value))) {
+      configHz[inst.id] = Math.max(20, Math.min(1000, parseFloat(input.value)));
+    }
+  });
+  guardarConfiguracion();
+  renderBotonesInstrumentos();
+  actualizarDisplayReferencia();
+  cerrarModal();
+};
+
+// variables d'Àudio i Algorisme de Detecció
 let audioCtx = null;
 let analyser = null;
 let micStream = null;
 let rafId = null;
 let escuchando = false;
 
-const elInstrumentos = document.getElementById('instrumentos');
-const elNota = document.getElementById('nota');
-const elHz = document.getElementById('hz');
-const elEstado = document.getElementById('estado');
+let ultimoHzCalculado = 0;
+let strikeTimeout = null;
+
+const elHzVal = document.getElementById('hzVal');
+const elEstadoVal = document.getElementById('estadoVal');
 const elAguja = document.getElementById('aguja');
 const elBtnEscuchar = document.getElementById('btnEscuchar');
-const elBtnRef = document.getElementById('btnRef');
-const elRefTexto = document.getElementById('refTexto');
+const elStrikeIndicator = document.getElementById('strikeIndicator');
+const elStrikeText = document.getElementById('strikeText');
 
-function construirInstrumentos(){
-  elInstrumentos.innerHTML = '';
-  instrumentosData.forEach(inst => {
-    const b = document.createElement('button');
-    b.className = 'inst-btn' + (inst.id === instrumentoActual.id ? ' activo' : '');
-    b.textContent = inst.nombre;
-    b.onclick = () => {
-      instrumentoActual = inst;
-      referencia = inst.objetivo; // el preset actúa como referencia inicial (o null si es libre)
-      actualizarRefTexto();
-      construirInstrumentos();
-    };
-    elInstrumentos.appendChild(b);
-  });
-}
-
-function actualizarRefTexto(){
-  if(referencia){
-    elRefTexto.innerHTML = 'Referencia: <b>' + referencia.toFixed(1) + ' Hz</b>';
-  } else {
-    elRefTexto.textContent = 'Sin referencia fijada — se mostrará la nota más próxima';
-  }
-}
-
-function frecuenciaANota(freq){
-  if(!freq || freq <= 0) return { texto: '—', cents: 0 };
-  const A4 = 440;
-  const semitonos = 12 * Math.log2(freq / A4);
-  const semitonoRedondeado = Math.round(semitonos);
-  const cents = (semitonos - semitonoRedondeado) * 100;
-  const indice = ((semitonoRedondeado % 12) + 9 + 12) % 12; // ajuste para que 0=A4->La
-  const octava = 4 + Math.floor((semitonoRedondeado + 9) / 12);
-  return { texto: NOMBRES_NOTAS[indice] + octava, cents };
-}
-
-// Autocorrelación simple para detectar pitch (ACF2+)
-function autoCorrelate(buffer, sampleRate){
+function detectarFrecuenciaPercusion(buffer, sampleRate) {
   const SIZE = buffer.length;
-  let rms = 0;
-  for(let i=0;i<SIZE;i++){ rms += buffer[i]*buffer[i]; }
-  rms = Math.sqrt(rms/SIZE);
-  if(rms < 0.01) return -1; // demasiado silencio
+  
+  // Calcular RMS (Energia)
+  let sumSquare = 0;
+  for (let i = 0; i < SIZE; i++) {
+    sumSquare += buffer[i] * buffer[i];
+  }
+  const rms = Math.sqrt(sumSquare / SIZE);
 
-  let r1 = 0, r2 = SIZE-1, thres = 0.2;
-  for(let i=0;i<SIZE/2;i++){ if(Math.abs(buffer[i]) < thres){ r1 = i; break; } }
-  for(let i=1;i<SIZE/2;i++){ if(Math.abs(buffer[SIZE-i]) < thres){ r2 = SIZE-i; break; } }
+  // Umbral de soroll per ignorar silenci
+  if (rms < 0.012) return { freq: -1, rms };
+
+  // Retall de creuament per zero per reduir el soroll inicial
+  let r1 = 0, r2 = SIZE - 1, thres = 0.15;
+  for (let i = 0; i < SIZE / 2; i++) { if (Math.abs(buffer[i]) < thres) { r1 = i; break; } }
+  for (let i = 1; i < SIZE / 2; i++) { if (Math.abs(buffer[SIZE - i]) < thres) { r2 = SIZE - i; break; } }
 
   const trimmed = buffer.slice(r1, r2);
   const newSize = trimmed.length;
-  const c = new Array(newSize).fill(0);
-  for(let lag=0; lag<newSize; lag++){
-    for(let i=0; i<newSize-lag; i++){
-      c[lag] += trimmed[i]*trimmed[i+lag];
+  const c = new Float32Array(newSize);
+
+  for (let lag = 0; lag < newSize; lag++) {
+    let sum = 0;
+    for (let i = 0; i < newSize - lag; i++) {
+      sum += trimmed[i] * trimmed[i + lag];
+    }
+    c[lag] = sum;
+  }
+
+  let d = 0;
+  while (d < newSize - 1 && c[d] > c[d + 1]) d++;
+
+  let maxval = -1, maxpos = -1;
+  for (let i = d; i < newSize; i++) {
+    if (c[i] > maxval) {
+      maxval = c[i];
+      maxpos = i;
     }
   }
-  let d = 0;
-  while(d < newSize-1 && c[d] > c[d+1]) d++;
-  let maxval = -1, maxpos = -1;
-  for(let i=d; i<newSize; i++){
-    if(c[i] > maxval){ maxval = c[i]; maxpos = i; }
-  }
+
   let T0 = maxpos;
-  if(T0 <= 0) return -1;
+  if (T0 <= 0) return { freq: -1, rms };
 
-  const x1 = c[T0-1] || 0, x2 = c[T0] || 0, x3 = c[T0+1] || 0;
-  const a = (x1 + x3 - 2*x2) / 2;
+  // Interpolació parabòlica per a la precisió decimal
+  const x1 = c[T0 - 1] || 0;
+  const x2 = c[T0] || 0;
+  const x3 = c[T0 + 1] || 0;
+  const a = (x1 + x3 - 2 * x2) / 2;
   const b = (x3 - x1) / 2;
-  if(a) T0 = T0 - b/(2*a);
+  if (a !== 0) T0 = T0 - b / (2 * a);
 
-  return sampleRate / T0;
+  return { freq: sampleRate / T0, rms };
 }
 
-function loopDeteccion(){
+let lastRms = 0;
+
+function actualizarMedicion(freq, forceUpdate = false) {
+  if (freq <= 0) return;
+
+  const targetHz = configHz[idInstrumentoSeleccionado];
+  elHzVal.textContent = freq.toFixed(1);
+
+  // Calcular diferència en Cents musicals respecte al target configurat
+  const centsDiff = 1200 * Math.log2(freq / targetHz);
+  
+  // Limitar l'agulla a la pantalla (-50 a +50 cents)
+  const clampedCents = Math.max(-50, Math.min(50, centsDiff));
+  const posPercentage = 50 + (clampedCents / 50) * 45;
+  
+  elAguja.style.left = posPercentage + '%';
+
+  const enTono = Math.abs(centsDiff) <= 6;
+  elAguja.classList.toggle('ok', enTono);
+
+  if (enTono) {
+    elEstadoVal.textContent = '¡Afinació perfecta!';
+    elEstadoVal.className = 'estado ok';
+  } else if (centsDiff > 0) {
+    elEstadoVal.textContent = `+${centsDiff.toFixed(0)}c (Agut → Afluixa la pell)`;
+    elEstadoVal.className = 'estado alto';
+  } else {
+    elEstadoVal.textContent = `${centsDiff.toFixed(0)}c (Greu → Tensa la pell)`;
+    elEstadoVal.className = 'estado bajo';
+  }
+}
+
+function dispararEfectoGolpe() {
+  elStrikeIndicator.classList.add('detected');
+  elStrikeText.textContent = '¡Cop Capturat!';
+  if (strikeTimeout) clearTimeout(strikeTimeout);
+  strikeTimeout = setTimeout(() => {
+    elStrikeIndicator.classList.remove('detected');
+    elStrikeText.textContent = 'Capturat (preparat per a un nou cop)';
+  }, 1200);
+}
+
+// Bucle principal d'escaneig del micròfon
+function procesarAudio() {
   const buffer = new Float32Array(analyser.fftSize);
   analyser.getFloatTimeDomainData(buffer);
-  const freq = autoCorrelate(buffer, audioCtx.sampleRate);
 
-  if(freq > 30 && freq < 1000){
-    ultimaFrecuencia = freq;
-    elHz.textContent = freq.toFixed(1) + ' Hz';
+  const { freq, rms } = detectarFrecuenciaPercusion(buffer, audioCtx.sampleRate);
 
-    if(referencia){
-      const centsDiff = 1200 * Math.log2(freq / referencia);
-      const clamped = Math.max(-50, Math.min(50, centsDiff));
-      const posPorcentaje = 50 + (clamped / 50) * 47;
-      elAguja.style.left = posPorcentaje + '%';
-      const enTono = Math.abs(centsDiff) < 6;
-      elAguja.classList.toggle('ok', enTono);
-      elNota.textContent = (centsDiff > 0 ? '+' : '') + centsDiff.toFixed(0) + 'c';
-      elEstado.textContent = enTono ? 'Justo en tono' : (centsDiff > 0 ? 'Un poco agudo — afloja' : 'Un poco grave — tensa');
-    } else {
-      const { texto, cents } = frecuenciaANota(freq);
-      elNota.textContent = texto;
-      const clamped = Math.max(-50, Math.min(50, cents));
-      const posPorcentaje = 50 + (clamped / 50) * 47;
-      elAguja.style.left = posPorcentaje + '%';
-      elAguja.classList.toggle('ok', Math.abs(cents) < 6);
-      elEstado.textContent = 'Nota más próxima detectada';
+  // Detecció d'impacte (Peak onset): increment sobtat de volum
+  const deltaRms = rms - lastRms;
+  const esGolpe = deltaRms > 0.045 && rms > 0.05;
+
+  if (esGolpe && freq > 40 && freq < 900) {
+    ultimoHzCalculado = freq;
+    dispararEfectoGolpe();
+    actualizarMedicion(freq);
+  } else if (freq > 40 && freq < 900 && rms > 0.04) {
+    // Si no és un nou cop sobtat però la pell continua ressonant,
+    // apliquem un filtre suau per estabilitzar la nota
+    if (Math.abs(freq - ultimoHzCalculado) < 15 || ultimoHzCalculado === 0) {
+      ultimoHzCalculado = ultimoHzCalculado * 0.7 + freq * 0.3;
+      actualizarMedicion(ultimoHzCalculado);
     }
   }
 
-  rafId = requestAnimationFrame(loopDeteccion);
+  lastRms = rms;
+  rafId = requestAnimationFrame(procesarAudio);
 }
 
-async function iniciarEscucha(){
-  try{
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
-  }catch(err){
-    elEstado.textContent = 'No se pudo acceder al micrófono';
+async function iniciarAudio() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false
+      }
+    });
+  } catch (e) {
+    elEstadoVal.textContent = 'Error: Sense accés al micròfon';
     return;
   }
+
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioCtx.createAnalyser();
   analyser.fftSize = 2048;
+  
   const source = audioCtx.createMediaStreamSource(micStream);
   source.connect(analyser);
 
   escuchando = true;
-  elBtnEscuchar.textContent = 'Detener';
+  elBtnEscuchar.textContent = 'Aturar Micròfon';
   elBtnEscuchar.classList.add('escuchando');
-  elEstado.textContent = 'Escuchando… golpea el parche';
-  loopDeteccion();
+  elEstadoVal.textContent = 'Escoltant... fes sonar l\'instrument';
+  elStrikeText.textContent = 'Esperant el to...';
+  
+  procesarAudio();
 }
 
-function detenerEscucha(){
+function detenerAudio() {
   escuchando = false;
-  if(rafId) cancelAnimationFrame(rafId);
-  if(micStream) micStream.getTracks().forEach(t => t.stop());
-  if(audioCtx) audioCtx.close();
-  elBtnEscuchar.textContent = 'Escuchar';
+  if (rafId) cancelAnimationFrame(rafId);
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (audioCtx) audioCtx.close();
+
+  elBtnEscuchar.textContent = 'Activar Micròfon';
   elBtnEscuchar.classList.remove('escuchando');
-  elEstado.textContent = 'Pulsa "Escuchar" y golpea el parche';
-  elAguja.style.left = '50%';
-  elAguja.classList.remove('ok');
+  elEstadoVal.textContent = 'Micròfon aturat';
+  elEstadoVal.className = 'estado';
+  elStrikeIndicator.classList.remove('detected');
+  elStrikeText.textContent = 'Micròfon inactiu';
 }
 
 elBtnEscuchar.onclick = () => {
-  if(escuchando){ detenerEscucha(); } else { iniciarEscucha(); }
-};
-
-elBtnRef.onclick = () => {
-  if(ultimaFrecuencia > 0){
-    referencia = ultimaFrecuencia;
-    actualizarRefTexto();
+  if (escuchando) {
+    detenerAudio();
+  } else {
+    iniciarAudio();
   }
 };
-
-instrumentoActual = instrumentosData[0];
-referencia = instrumentoActual.objetivo;
-construirInstrumentos();
-actualizarRefTexto();
 </script>
 </body>
 </html>
