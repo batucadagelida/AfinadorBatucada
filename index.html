@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afinador de Batucada</title>
+<style>
+  :root{
+    --piel: #e8dcc4;
+    --couro: #8a5a3c;
+    --couro-escuro: #5c3a26;
+    --laton: #b8863e;
+    --carvao: #1f1a16;
+    --carvao-suave: #2c2520;
+    --vermelho: #b3412c;
+    --verde-ok: #5c7a4f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--carvao);
+    background-image:
+      radial-gradient(circle at 50% -10%, rgba(184,134,62,0.12), transparent 55%);
+    color: var(--piel);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display:flex;
+    justify-content:center;
+    padding: 28px 16px 48px;
+  }
+  .app{
+    width:100%;
+    max-width: 420px;
+  }
+  header{
+    text-align:left;
+    margin-bottom: 22px;
+  }
+  .kicker{
+    font-size: 13px;
+    color: var(--laton);
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+  }
+  h1{
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    margin: 0;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  .instrumentos{
+    display:flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 18px;
+    margin-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .instrumentos::-webkit-scrollbar{display:none;}
+  .inst-btn{
+    flex: 0 0 auto;
+    background: var(--carvao-suave);
+    border: 1px solid #40342a;
+    color: var(--piel);
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    cursor:pointer;
+  }
+  .inst-btn.activo{
+    background: var(--couro);
+    border-color: var(--couro);
+    color: #fff;
+  }
+
+  .disco{
+    position:relative;
+    background: radial-gradient(circle at 35% 30%, #ffffff08, transparent 60%), var(--carvao-suave);
+    border: 1px solid #40342a;
+    border-radius: 26px;
+    padding: 30px 22px 26px;
+    margin-bottom: 18px;
+  }
+  .rim{
+    position:absolute;
+    inset: 8px;
+    border-radius: 20px;
+    border: 6px solid var(--laton);
+    opacity: 0.18;
+    pointer-events:none;
+  }
+  .lectura{
+    text-align:center;
+    position:relative;
+  }
+  .nota{
+    font-family: 'Arial Black', Impact, sans-serif;
+    font-weight:900;
+    font-size: 72px;
+    line-height:1;
+    margin: 6px 0 2px;
+    color: #fff;
+  }
+  .hz{
+    font-size: 15px;
+    color: var(--laton);
+    letter-spacing: 0.02em;
+  }
+  .estado{
+    font-size: 13px;
+    color: #9c8f7d;
+    min-height: 18px;
+    margin-top: 6px;
+  }
+
+  .aguja-wrap{
+    margin: 22px auto 6px;
+    max-width: 300px;
+  }
+  .escala{
+    display:flex;
+    justify-content:space-between;
+    font-size: 11px;
+    color: #9c8f7d;
+    padding: 0 2px 4px;
+  }
+  .barra{
+    position:relative;
+    height: 10px;
+    background: #14100d;
+    border-radius: 999px;
+    overflow:visible;
+    border: 1px solid #40342a;
+  }
+  .barra .zona-centro{
+    position:absolute;
+    left: 47%;
+    width: 6%;
+    top:0;bottom:0;
+    background: rgba(92,122,79,0.35);
+  }
+  .aguja{
+    position:absolute;
+    top: -6px;
+    width: 4px;
+    height: 22px;
+    background: var(--vermelho);
+    border-radius: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: left 0.08s linear, background 0.15s linear;
+  }
+  .aguja.ok{ background: var(--verde-ok); }
+
+  .fila-botones{
+    display:flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  button.principal{
+    flex:1;
+    background: var(--laton);
+    color: #241b10;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor:pointer;
+  }
+  button.principal:active{ transform: translateY(1px); }
+  button.principal.escuchando{
+    background: var(--vermelho);
+    color: #fff;
+  }
+  button.secundario{
+    flex: 1;
+    background: transparent;
+    color: var(--piel);
+    border: 1px solid #40342a;
+    border-radius: 14px;
+    padding: 14px 10px;
+    font-size: 14px;
+    cursor:pointer;
+  }
+
+  .referencia{
+    margin-top: 14px;
+    font-size: 13px;
+    color: #9c8f7d;
+    text-align:center;
+    min-height: 18px;
+  }
+  .referencia b{ color: var(--piel); }
+
+  .nota-explicativa{
+    margin-top: 22px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #9c8f7d;
+  }
+  .nota-explicativa strong{ color: var(--piel); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <p class="kicker">Batucada</p>
+    <h1>Afinador de<br>parches</h1>
+  </header>
+
+  <div class="instrumentos" id="instrumentos"></div>
+
+  <div class="disco">
+    <div class="rim"></div>
+    <div class="lectura">
+      <div class="nota" id="nota">—</div>
+      <div class="hz" id="hz">0.0 Hz</div>
+      <div class="estado" id="estado">Pulsa "Escuchar" y golpea el parche</div>
+    </div>
+
+    <div class="aguja-wrap">
+      <div class="escala"><span>grave</span><span>referencia</span><span>agudo</span></div>
+      <div class="barra">
+        <div class="zona-centro"></div>
+        <div class="aguja" id="aguja"></div>
+      </div>
+    </div>
+
+    <div class="fila-botones">
+      <button class="principal" id="btnEscuchar">Escuchar</button>
+      <button class="secundario" id="btnRef">Fijar referencia</button>
+    </div>
+    <div class="referencia" id="refTexto">Sin referencia fijada — se mostrará la nota más próxima</div>
+  </div>
+
+  <p class="nota-explicativa">
+    <strong>Cómo usarlo:</strong> los parches de percusión no siempre tienen una nota musical exacta,
+    así que este afinador hace dos cosas: muestra la <strong>nota más cercana</strong> detectada al golpear,
+    y te deja <strong>fijar una referencia</strong> — golpea el primer surdo cuando suene bien, pulsa "Fijar referencia",
+    y luego usa la aguja para igualar la tensión del resto de surdos del mismo tipo a esa misma frecuencia.
+  </p>
+</div>
+
+<script>
+const instrumentosData = [
+  { id: 'surdo-marcacion', nombre: 'Surdo marcación', objetivo: 73.4 },
+  { id: 'surdo-respuesta', nombre: 'Surdo respuesta', objetivo: 98.0 },
+  { id: 'surdo-corte', nombre: 'Surdo corte', objetivo: 110.0 },
+  { id: 'caixa', nombre: 'Caixa', objetivo: 220.0 },
+  { id: 'repique', nombre: 'Repique', objetivo: 196.0 },
+  { id: 'tamborim', nombre: 'Tamborim', objetivo: 330.0 },
+  { id: 'libre', nombre: 'Libre (sin preset)', objetivo: null },
+];
+
+const NOMBRES_NOTAS = ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+
+let instrumentoActual = instrumentosData[0];
+let referencia = null; // Hz fijado manualmente por el usuario
+let ultimaFrecuencia = 0;
+
+let audioCtx = null;
+let analyser = null;
+let micStream = null;
+let rafId = null;
+let escuchando = false;
+
+const elInstrumentos = document.getElementById('instrumentos');
+const elNota = document.getElementById('nota');
+const elHz = document.getElementById('hz');
+const elEstado = document.getElementById('estado');
+const elAguja = document.getElementById('aguja');
+const elBtnEscuchar = document.getElementById('btnEscuchar');
+const elBtnRef = document.getElementById('btnRef');
+const elRefTexto = document.getElementById('refTexto');
+
+function construirInstrumentos(){
+  elInstrumentos.innerHTML = '';
+  instrumentosData.forEach(inst => {
+    const b = document.createElement('button');
+    b.className = 'inst-btn' + (inst.id === instrumentoActual.id ? ' activo' : '');
+    b.textContent = inst.nombre;
+    b.onclick = () => {
+      instrumentoActual = inst;
+      referencia = inst.objetivo; // el preset actúa como referencia inicial (o null si es libre)
+      actualizarRefTexto();
+      construirInstrumentos();
+    };
+    elInstrumentos.appendChild(b);
+  });
+}
+
+function actualizarRefTexto(){
+  if(referencia){
+    elRefTexto.innerHTML = 'Referencia: <b>' + referencia.toFixed(1) + ' Hz</b>';
+  } else {
+    elRefTexto.textContent = 'Sin referencia fijada — se mostrará la nota más próxima';
+  }
+}
+
+function frecuenciaANota(freq){
+  if(!freq || freq <= 0) return { texto: '—', cents: 0 };
+  const A4 = 440;
+  const semitonos = 12 * Math.log2(freq / A4);
+  const semitonoRedondeado = Math.round(semitonos);
+  const cents = (semitonos - semitonoRedondeado) * 100;
+  const indice = ((semitonoRedondeado % 12) + 9 + 12) % 12; // ajuste para que 0=A4->La
+  const octava = 4 + Math.floor((semitonoRedondeado + 9) / 12);
+  return { texto: NOMBRES_NOTAS[indice] + octava, cents };
+}
+
+// Autocorrelación simple para detectar pitch (ACF2+)
+function autoCorrelate(buffer, sampleRate){
+  const SIZE = buffer.length;
+  let rms = 0;
+  for(let i=0;i<SIZE;i++){ rms += buffer[i]*buffer[i]; }
+  rms = Math.sqrt(rms/SIZE);
+  if(rms < 0.01) return -1; // demasiado silencio
+
+  let r1 = 0, r2 = SIZE-1, thres = 0.2;
+  for(let i=0;i<SIZE/2;i++){ if(Math.abs(buffer[i]) < thres){ r1 = i; break; } }
+  for(let i=1;i<SIZE/2;i++){ if(Math.abs(buffer[SIZE-i]) < thres){ r2 = SIZE-i; break; } }
+
+  const trimmed = buffer.slice(r1, r2);
+  const newSize = trimmed.length;
+  const c = new Array(newSize).fill(0);
+  for(let lag=0; lag<newSize; lag++){
+    for(let i=0; i<newSize-lag; i++){
+      c[lag] += trimmed[i]*trimmed[i+lag];
+    }
+  }
+  let d = 0;
+  while(d < newSize-1 && c[d] > c[d+1]) d++;
+  let maxval = -1, maxpos = -1;
+  for(let i=d; i<newSize; i++){
+    if(c[i] > maxval){ maxval = c[i]; maxpos = i; }
+  }
+  let T0 = maxpos;
+  if(T0 <= 0) return -1;
+
+  const x1 = c[T0-1] || 0, x2 = c[T0] || 0, x3 = c[T0+1] || 0;
+  const a = (x1 + x3 - 2*x2) / 2;
+  const b = (x3 - x1) / 2;
+  if(a) T0 = T0 - b/(2*a);
+
+  return sampleRate / T0;
+}
+
+function loopDeteccion(){
+  const buffer = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buffer);
+  const freq = autoCorrelate(buffer, audioCtx.sampleRate);
+
+  if(freq > 30 && freq < 1000){
+    ultimaFrecuencia = freq;
+    elHz.textContent = freq.toFixed(1) + ' Hz';
+
+    if(referencia){
+      const centsDiff = 1200 * Math.log2(freq / referencia);
+      const clamped = Math.max(-50, Math.min(50, centsDiff));
+      const posPorcentaje = 50 + (clamped / 50) * 47;
+      elAguja.style.left = posPorcentaje + '%';
+      const enTono = Math.abs(centsDiff) < 6;
+      elAguja.classList.toggle('ok', enTono);
+      elNota.textContent = (centsDiff > 0 ? '+' : '') + centsDiff.toFixed(0) + 'c';
+      elEstado.textContent = enTono ? 'Justo en tono' : (centsDiff > 0 ? 'Un poco agudo — afloja' : 'Un poco grave — tensa');
+    } else {
+      const { texto, cents } = frecuenciaANota(freq);
+      elNota.textContent = texto;
+      const clamped = Math.max(-50, Math.min(50, cents));
+      const posPorcentaje = 50 + (clamped / 50) * 47;
+      elAguja.style.left = posPorcentaje + '%';
+      elAguja.classList.toggle('ok', Math.abs(cents) < 6);
+      elEstado.textContent = 'Nota más próxima detectada';
+    }
+  }
+
+  rafId = requestAnimationFrame(loopDeteccion);
+}
+
+async function iniciarEscucha(){
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
+  }catch(err){
+    elEstado.textContent = 'No se pudo acceder al micrófono';
+    return;
+  }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  const source = audioCtx.createMediaStreamSource(micStream);
+  source.connect(analyser);
+
+  escuchando = true;
+  elBtnEscuchar.textContent = 'Detener';
+  elBtnEscuchar.classList.add('escuchando');
+  elEstado.textContent = 'Escuchando… golpea el parche';
+  loopDeteccion();
+}
+
+function detenerEscucha(){
+  escuchando = false;
+  if(rafId) cancelAnimationFrame(rafId);
+  if(micStream) micStream.getTracks().forEach(t => t.stop());
+  if(audioCtx) audioCtx.close();
+  elBtnEscuchar.textContent = 'Escuchar';
+  elBtnEscuchar.classList.remove('escuchando');
+  elEstado.textContent = 'Pulsa "Escuchar" y golpea el parche';
+  elAguja.style.left = '50%';
+  elAguja.classList.remove('ok');
+}
+
+elBtnEscuchar.onclick = () => {
+  if(escuchando){ detenerEscucha(); } else { iniciarEscucha(); }
+};
+
+elBtnRef.onclick = () => {
+  if(ultimaFrecuencia > 0){
+    referencia = ultimaFrecuencia;
+    actualizarRefTexto();
+  }
+};
+
+instrumentoActual = instrumentosData[0];
+referencia = instrumentoActual.objetivo;
+construirInstrumentos();
+actualizarRefTexto();
+</script>
+</body>
+</html>
